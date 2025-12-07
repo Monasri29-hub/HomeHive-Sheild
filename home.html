@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HomeHive – Intelligent Home Protection</title>
+
+<style>
+    :root {
+        --neon1: #2ee3ff;
+        --neon2: #ff4ecf;
+        --neon3: #7b5bff;
+        --text-light: #e8f4ff;
+        --glass: rgba(255,255,255,0.06);
+        --border: rgba(255,255,255,0.14);
+        font-family: "Inter", sans-serif;
+    }
+
+    body {
+        margin: 0;
+        background: #03050a;
+        overflow-x: hidden;
+        color: var(--text-light);
+    }
+
+    /* Animated background particles */
+    .particle {
+        position: absolute;
+        border-radius: 50%;
+        background: var(--neon1);
+        filter: blur(45px);
+        opacity: 0.08;
+        animation: float 8s infinite alternate ease-in-out;
+    }
+    .p1 { width: 320px; height: 320px; top: 10%; left: 5%; }
+    .p2 { width: 280px; height: 280px; bottom: 12%; right: 5%; animation-delay: 2s; background: var(--neon2); }
+    .p3 { width: 180px; height: 180px; top: 50%; right: 30%; animation-delay: 4s; background: var(--neon3); }
+
+    @keyframes float {
+        0% { transform: translateY(0); }
+        100% { transform: translateY(-40px); }
+    }
+
+    /* Navigation */
+    nav {
+        display: flex;
+        justify-content: space-between;
+        padding: 22px 50px;
+        align-items: center;
+        position: relative;
+        z-index: 10;
+    }
+
+    nav img {
+        height: 60px;
+        filter: drop-shadow(0 0 10px rgba(46,227,255,0.4));
+    }
+
+    .nav-links a {
+        margin: 0 16px;
+        font-size: 15px;
+        cursor: pointer;
+        text-decoration: none;
+        color: #cfe8ff;
+        transition: 0.2s;
+    }
+    .nav-links a:hover {
+        color: white;
+        text-shadow: 0 0 12px var(--neon1);
+    }
+
+    .btn-nav {
+        padding: 10px 20px;
+        background: linear-gradient(135deg, var(--neon1), var(--neon2));
+        border-radius: 12px;
+        color: white !important;
+        text-decoration: none;
+        font-weight: 600;
+        transition: 0.2s;
+    }
+    .btn-nav:hover {
+        transform: scale(1.04);
+        box-shadow: 0 0 15px rgba(255,78,207,0.4);
+    }
+
+    /* Hero */
+    .hero {
+        text-align: left;
+        max-width: 680px;
+        margin: 110px 80px;
+        position: relative;
+        z-index: 5;
+    }
+
+    .hero h1 {
+        font-size: 52px;
+        margin-bottom: 20px;
+        background: linear-gradient(135deg, var(--neon1), var(--neon2));
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: fadeInMove 1.2s ease-out;
+    }
+
+    @keyframes fadeInMove {
+        from { opacity: 0; transform: translateY(15px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero p {
+        color: #b5c7df;
+        font-size: 18px;
+        line-height: 1.6;
+        margin-bottom: 35px;
+        max-width: 600px;
+        animation: fadeInMove 1.4s ease-out;
+    }
+
+    /* Hero buttons */
+    .hero-btns a {
+        padding: 14px 28px;
+        text-decoration: none;
+        font-weight: 600;
+        margin-right: 18px;
+        border-radius: 14px;
+        transition: 0.2s;
+        display: inline-block;
+    }
+
+    .btn-main {
+        background: linear-gradient(135deg, var(--neon1), var(--neon2));
+        color: white;
+    }
+    .btn-main:hover {
+        transform: scale(1.05);
+        box-shadow: 0 0 20px rgba(46,227,255,0.4);
+    }
+
+    .btn-sec {
+        background: rgba(255,255,255,0.08);
+        border: 1px solid var(--border);
+        color: #d0e4ff;
+    }
+    .btn-sec:hover {
+        background: rgba(255,255,255,0.15);
+        transform: scale(1.05);
+    }
+
+    /* Feature cards */
+    .cards {
+        display: flex;
+        gap: 30px;
+        margin: 60px 80px;
+    }
+
+    .card {
+        width: 280px;
+        padding: 26px;
+        background: var(--glass);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        backdrop-filter: blur(18px);
+        box-shadow: 0 0 30px rgba(0,0,0,0.4);
+        transition: 0.25s;
+        cursor: pointer;
+    }
+    .card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 0 30px rgba(255,78,207,0.3);
+    }
+
+    .card h3 {
+        color: white;
+        margin-bottom: 10px;
+    }
+
+    .card p {
+        color: #a9bfd8;
+        font-size: 14px;
+        margin-bottom: 18px;
+    }
+
+    .card-btn {
+        padding: 10px 20px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, var(--neon1), var(--neon2));
+        color: white;
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    footer {
+        text-align: center;
+        padding: 40px;
+        margin-top: 60px;
+        color: #8695aa;
+    }
+
+</style>
+</head>
+<body>
+
+<!-- Background particles -->
+<div class="particle p1"></div>
+<div class="particle p2"></div>
+<div class="particle p3"></div>
+
+<!-- Navigation -->
+<nav>
+    <img src="logo.png" alt="HomeHive logo">
+    <div class="nav-links">
+        <a href="dashboard.html">Dashboard</a>
+        <a href="emotion.html">Emotion</a>
+        <a href="phishing.html">Phishing</a>
+        <a href="security.html">Security</a>
+        <a class="btn-nav" href="dashboard.html">Open Modules</a>
+    </div>
+</nav>
+
+<!-- HERO SECTION -->
+<div class="hero">
+    <h1>HomeHive — Intelligent Home Protection System</h1>
+    <p>
+        Use AI to detect emotions, scan scam messages, and identify unknown visitors —  
+        all in one futuristic system designed to keep your family safe and comfortable.
+    </p>
+
+    <div class="hero-btns">
+        <a class="btn-main" href="dashboard.html">Open Dashboard</a>
+        <a class="btn-sec" href="security.html">Run Security Scan</a>
+    </div>
+</div>
+
+<!-- Feature Cards -->
+<div class="cards">
+    <div class="card" onclick="location.href='emotion.html'">
+        <h3>Emotion AI</h3>
+        <p>Instantly detect human emotions using advanced AI.</p>
+        <a class="card-btn">Try Emotion</a>
+    </div>
+
+    <div class="card" onclick="location.href='phishing.html'">
+        <h3>Anti-Phishing</h3>
+        <p>Scan suspicious messages & protect your family.</p>
+        <a class="card-btn">Scan Now</a>
+    </div>
+
+    <div class="card" onclick="location.href='security.html'">
+        <h3>Security Monitor</h3>
+        <p>Detect unknown visitors and trigger alerts.</p>
+        <a class="card-btn">Check Security</a>
+    </div>
+</div>
+
+<footer>© HomeHive 2025 — Powered by AI</footer>
+
+</body>
+</html>
+

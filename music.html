@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>HomeHive — Live Emotion Scanner</title>
+
+<style>
+    body {
+        margin: 0;
+        font-family: "Segoe UI", sans-serif;
+        background: #02040c;
+        overflow: hidden;
+        transition: background 1s ease;
+        text-align: center;
+        color: white;
+    }
+
+    /* Fullscreen Live Scanner Area */
+    #scannerContainer {
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    #cameraFeed {
+        width: 420px;
+        height: 420px;
+        border-radius: 50%;
+        object-fit: cover;
+        z-index: 2;
+        box-shadow: 0 0 40px rgba(0,255,255,0.6);
+        border: 3px solid rgba(0,255,255,0.4);
+    }
+
+    /* Scanning Neon Ring */
+    .scanRing {
+        position: absolute;
+        width: 460px;
+        height: 460px;
+        border-radius: 50%;
+        border: 4px dashed rgba(0,255,255,0.3);
+        animation: rotate 6s linear infinite;
+        z-index: 1;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    /* Emotion Label */
+    #emotionLabel {
+        position: absolute;
+        top: 75%;
+        font-size: 42px;
+        font-weight: 800;
+        text-shadow: 0 0 20px rgba(255,255,255,0.9);
+    }
+
+    #scanBtn {
+        position: absolute;
+        top: 85%;
+        padding: 15px 40px;
+        font-size: 20px;
+        font-weight: bold;
+        border: none;
+        border-radius: 12px;
+        background: linear-gradient(90deg, #21d4ff, #ff66cc);
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    #scanBtn:hover {
+        transform: scale(1.07);
+    }
+
+    /* Hidden Canvas for sending image */
+    #captureCanvas {
+        display: none;
+    }
+</style>
+</head>
+
+<body>
+
+<div id="scannerContainer">
+    
+    <video id="cameraFeed" autoplay playsinline></video>
+    <div class="scanRing"></div>
+
+    <h1 id="emotionLabel">LOADING…</h1>
+
+    <button id="scanBtn" onclick="scanEmotion()">Scan Emotion</button>
+
+    <canvas id="captureCanvas"></canvas>
+</div>
+
+<script>
+
+/////////////////////////////
+// CAMERA SETUP
+/////////////////////////////
+
+const video = document.getElementById("cameraFeed");
+const canvas = document.getElementById("captureCanvas");
+const emotionLabel = document.getElementById("emotionLabel");
+
+navigator.mediaDevices.getUserMedia({ video: true })
+.then(stream => { video.srcObject = stream; })
+.catch(err => alert("Camera access blocked!"));
+
+
+/////////////////////////////
+// EMOTION → COLOR + MUSIC MAP
+/////////////////////////////
+
+const moodStyles = {
+    happy:  { color: "#ffe066", glow:"rgba(255,230,100,0.7)", music:"happy.mp3" },
+    sad:    { color: "#1e3a8a", glow:"rgba(0,120,255,0.6)", music:"sad.mp3" },
+    angry:  { color: "#7b0000", glow:"rgba(255,0,80,0.8)", music:"angry.mp3" },
+    fear:   { color: "#4b5563", glow:"rgba(255,255,255,0.7)", music:"fear.mp3" },
+    disgust:{ color: "#064e3b", glow:"rgba(0,255,100,0.7)", music:"disgust.mp3" },
+    surprise:{color:"#6d28d9", glow:"rgba(255,0,255,0.8)", music:"surprise.mp3" },
+    neutral:{ color:"#0a0f24", glow:"rgba(180,180,255,0.5)", music:"neutral.mp3" }
+};
+
+let audio = new Audio();
+
+
+/////////////////////////////
+// SCAN EMOTION FUNCTION
+/////////////////////////////
+
+function scanEmotion() {
+
+    // Capture current frame
+    const ctx = canvas.getContext("2d");
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    ctx.drawImage(video, 0, 0);
+
+    canvas.toBlob(blob => {
+
+        let fd = new FormData();
+        fd.append("image", blob, "frame.jpg");
+
+        fetch("http://127.0.0.1:5000/analyze", {
+            method:"POST",
+            body: fd
+        })
+        .then(res => res.json())
+        .then(data => {
+
+            console.log("BACKEND:", data);
+
+            let emo = (data.emotion || "neutral").toLowerCase();
+
+            emotionLabel.innerText = emo.toUpperCase();
+
+            applyMood(emo);
+
+        })
+        .catch(err => console.error(err));
+
+    }, "image/jpeg");
+}
+
+
+
+/////////////////////////////
+// APPLY COLOR + MUSIC BASED ON EMOTION
+/////////////////////////////
+
+function applyMood(emo) {
+
+    const mood = moodStyles[emo] || moodStyles["neutral"];
+
+    // background color
+    document.body.style.background = mood.color;
+
+    // glow effect
+    video.style.boxShadow = `0 0 50px ${mood.glow}`;
+
+    // play music
+    audio.pause();
+    audio = new Audio("music/" + mood.music);
+    audio.volume = 0.7;
+    audio.play();
+}
+
+</script>
+
+</body>
+</html>
+        

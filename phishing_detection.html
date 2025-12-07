@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>HomeHive — Phishing Detection</title>
+<style>
+  :root{
+    --bg:#070814; --card:#07101a; --muted:#9fb3c9;
+    --neon-c:#2ee3ff; --neon-p:#ff4ecf;
+    --accent:#ffd86b;
+    font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;
+  }
+  html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--bg),#02040a);color:#eaf7ff}
+  nav{display:flex;justify-content:space-between;padding:14px 28px;align-items:center;background:rgba(0,0,0,0.28);backdrop-filter:blur(8px);border-bottom:1px solid rgba(255,255,255,0.03)}
+  nav img{height:40px}
+  nav a{color:var(--muted);text-decoration:none;margin-left:14px}
+  .container{max-width:1200px;margin:34px auto;padding:18px;display:grid;grid-template-columns:1fr 360px;gap:24px}
+  @media(max-width:980px){.container{grid-template-columns:1fr}.side{order:2}.main{order:1}}
+
+  .card{background:linear-gradient(180deg, rgba(255,255,255,0.014), rgba(255,255,255,0.006));border:1px solid rgba(255,255,255,0.03);border-radius:14px;padding:20px}
+  h1{font-size:22px;margin:6px 0 10px;background:linear-gradient(90deg,var(--neon-c),var(--neon-p));-webkit-background-clip:text;
+        background-clip:text;
+        -webkit-text-fill-color:transparent;}
+  p.lead{color:var(--muted);margin:0 0 14px}
+
+  /* uploader */
+  .uploader{
+    border-radius:12px;padding:18px;border:1px dashed rgba(255,255,255,0.04);
+    background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent);
+    display:flex;flex-direction:column;align-items:center;gap:10px;min-height:220px;justify-content:center;
+  }
+  .uploader.dragging{border-color:rgba(46,227,255,0.45);box-shadow:0 10px 40px rgba(46,227,255,0.03) inset}
+
+  .uploader input[type=file]{display:none}
+  .btn{padding:10px 14px;border-radius:10px;border:none;cursor:pointer;font-weight:700}
+  .btn-primary{background:linear-gradient(90deg,var(--neon-c),var(--neon-p));color:#03101a}
+  .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted)}
+  .small{font-size:13px;color:var(--muted)}
+
+  /* result area */
+  .result-status{display:flex;gap:12px;align-items:center}
+  .status-dot{width:14px;height:14px;border-radius:50%;display:inline-block}
+  .safe{background:#3dd37b}
+  .susp{background:#ffd166}
+  .mal{background:#ff6b6b}
+
+  .progress{height:12px;background:rgba(255,255,255,0.04);border-radius:999px;overflow:hidden;margin-top:10px}
+  .progress > i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--neon-c),var(--neon-p));transition:width 300ms ease}
+
+  .explain{margin-top:12px;color:var(--muted);line-height:1.45}
+
+  /* side panel */
+  .side .panel{margin-bottom:14px;padding:16px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.006));border:1px solid rgba(255,255,255,0.03)}
+  .meta{font-size:13px;color:var(--muted)}
+
+  .actions{display:flex;gap:10px;margin-top:12px}
+
+  .report{background:#081018;border-radius:10px;padding:12px;margin-top:12px;font-size:13px;color:var(--muted);max-height:160px;overflow:auto}
+  .copy-btn{padding:6px 10px;border-radius:8px;border:0;background:rgba(255,255,255,0.02);color:var(--muted);cursor:pointer}
+
+  /* utilities */
+  .muted{color:var(--muted)}
+  code.badge{background:rgba(255,255,255,0.02);padding:6px;border-radius:6px;color:var(--muted);font-size:13px}
+</style>
+</head>
+<body>
+<nav>
+  <img src="logo.png" alt="HomeHive">
+  <div>
+    <a href="home.html">Home</a>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="modules.html">Modules</a>
+  </div>
+</nav>
+
+<div class="container">
+  <!-- main -->
+  <main class="card">
+    <h1>Phishing Detection</h1>
+    <p class="lead">Upload an email (.eml / .msg), paste raw email text or screenshot — HomeHive will analyze for phishing indicators and explain why it's suspicious.</p>
+
+    <!-- uploader -->
+    <div id="uploader" class="uploader" tabindex="0">
+      <div id="uploadHint">
+        <div style="font-size:14px;color:var(--muted)">Drag & drop an email file or screenshot here</div>
+        <div class="small">Or</div>
+        <div style="margin-top:8px;">
+          <button id="chooseFile" class="btn btn-ghost">Choose File</button>
+          <button id="pasteEmail" class="btn btn-ghost">Paste Email Text</button>
+        </div>
+        <div class="small" style="margin-top:8px">Supported: .eml, .msg, .png, .jpg, .txt</div>
+      </div>
+      <input id="fileInput" type="file" accept=".eml,.msg,.png,.jpg,.jpeg,.txt" />
+    </div>
+
+    <!-- scan controls -->
+    <div style="display:flex;align-items:center;justify-content:center;margin-top:18px">
+      <button id="scanBtn" class="btn btn-primary" style="min-width:160px">Start Scan</button>
+      <button id="clearBtn" class="btn btn-ghost" style="min-width:120px">Clear</button>
+    </div>
+
+    <!-- progress & results -->
+    <div id="scanArea" style="margin-top:18px;display:none">
+      <div class="progress"><i id="progressBar"></i></div>
+      <div style="margin-top:10px;display:flex;justify-content:space-between;align-items:center">
+        <div class="muted small" id="progressLabel">Preparing scan...</div>
+        <div id="statusResult" class="muted small">—</div>
+      </div>
+
+      <div id="finalResult" style="margin-top:18px;display:none">
+        <div class="result-status">
+          <span class="status-dot" id="statusDot"></span>
+          <div style="font-weight:800;margin-left:4px" id="statusText">—</div>
+        </div>
+
+        <div class="explain" id="explainText">—</div>
+
+        <div class="actions">
+          <button id="copyReport" class="copy-btn">Copy Summary</button>
+          <button id="downloadJSON" class="copy-btn">Download JSON</button>
+        </div>
+
+        <div class="report" id="fullReport" aria-live="polite"></div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- side -->
+  <aside class="side">
+    <div class="panel">
+      <h4>Quick Tips</h4>
+      <ul style="margin:0;padding-left:16px;color:var(--muted)">
+        <li>Check sender domain vs reply-to</li>
+        <li>Look for urgent language and suspicious links</li>
+        <li>Verify attachments before opening</li>
+      </ul>
+    </div>
+
+    <div class="panel">
+      <h4>Scan Metadata</h4>
+      <div class="meta">Type: <code class="badge" id="metaType">—</code></div>
+      <div class="meta" style="margin-top:8px">Size: <code class="badge" id="metaSize">—</code></div>
+      <div class="meta" style="margin-top:8px">Engine: <code class="badge">phish-v1</code></div>
+    </div>
+
+    <div class="panel">
+      <h4>Backend</h4>
+      <div class="meta">Endpoint: <code class="badge" id="endpoint">/api/phish_scan</code></div>
+      <div style="margin-top:10px"><small class="muted">Make sure your backend accepts <code>multipart/form-data</code> with field <code>file</code> or <code>text</code>.</small></div>
+    </div>
+  </aside>
+</div>
+
+<script>
+(function(){
+  // Elements
+  const uploader = document.getElementById('uploader');
+  const fileInput = document.getElementById('fileInput');
+  const chooseFile = document.getElementById('chooseFile');
+  const pasteEmail = document.getElementById('pasteEmail');
+  const scanBtn = document.getElementById('scanBtn');
+  const clearBtn = document.getElementById('clearBtn');
+
+  const scanArea = document.getElementById('scanArea');
+  const progressBar = document.getElementById('progressBar');
+  const progressLabel = document.getElementById('progressLabel');
+  const statusResult = document.getElementById('statusResult');
+
+  const finalResult = document.getElementById('finalResult');
+  const statusDot = document.getElementById('statusDot');
+  const statusText = document.getElementById('statusText');
+  const explainText = document.getElementById('explainText');
+  const fullReport = document.getElementById('fullReport');
+  const copyReport = document.getElementById('copyReport');
+  const downloadJSON = document.getElementById('downloadJSON');
+
+  const metaType = document.getElementById('metaType');
+  const metaSize = document.getElementById('metaSize');
+  const endpointEl = document.getElementById('endpoint');
+
+  // State
+  let selectedFile = null;
+  let pastedText = null;
+  const BACKEND = 'http://127.0.0.1:5000/phishing'; // replace with your backend
+
+  // Drag & drop UX
+  ['dragenter','dragover'].forEach(evt => {
+    uploader.addEventListener(evt, e=>{
+      e.preventDefault(); e.stopPropagation();
+      uploader.classList.add('dragging');
+    });
+  });
+  ['dragleave','drop'].forEach(evt => {
+    uploader.addEventListener(evt, e=>{
+      e.preventDefault(); e.stopPropagation();
+      uploader.classList.remove('dragging');
+    });
+  });
+
+  uploader.addEventListener('drop', e=>{
+    const f = e.dataTransfer.files && e.dataTransfer.files[0];
+    if(f) handleFile(f);
+  });
+
+  chooseFile.addEventListener('click', ()=> fileInput.click());
+  fileInput.addEventListener('change', e=>{
+    if(e.target.files && e.target.files[0]) handleFile(e.target.files[0]);
+  });
+
+  pasteEmail.addEventListener('click', async ()=>{
+    const txt = prompt('Paste raw email text or HTML (press Cancel to cancel):');
+    if(txt) {
+      pastedText = txt;
+      selectedFile = null;
+      metaType.textContent = 'pasted-text';
+      metaSize.textContent = (txt.length) + ' chars';
+      showReady();
+    }
+  });
+
+  clearBtn.addEventListener('click', ()=>{
+    selectedFile = null; pastedText = null;
+    metaType.textContent = '—'; metaSize.textContent='—';
+    scanArea.style.display='none'; finalResult.style.display='none';
+    progressBar.style.width='0%';
+  });
+
+  function handleFile(f){
+    selectedFile = f; pastedText = null;
+    metaType.textContent = f.name.split('.').pop().toLowerCase();
+    metaSize.textContent = Math.round(f.size/1024)+' KB';
+    showReady();
+  }
+
+  function showReady(){
+    scanArea.style.display='block';
+    progressLabel.textContent = 'Ready to scan';
+    statusResult.textContent = 'Ready';
+    finalResult.style.display='none';
+    progressBar.style.width = '6%';
+  }
+
+  // Main scan flow
+  scanBtn.addEventListener('click', async ()=>{
+    if(!selectedFile && !pastedText){
+      alert('Please select a file or paste email text first.');
+      return;
+    }
+    finalResult.style.display='none';
+    scanArea.style.display='block';
+    progressLabel.textContent = 'Uploading…';
+    progressBar.style.width='18%';
+
+    try{
+      const fd = new FormData();
+      if(selectedFile) fd.append('file', selectedFile);
+      if(pastedText) fd.append('text', pastedText);
+
+      // start upload + analysis
+      const resp = await fetch(BACKEND, { method:'POST', body: fd });
+      if(!resp.ok){
+        throw new Error('Server returned '+resp.status);
+      }
+      progressBar.style.width='60%';
+      progressLabel.textContent = 'Analyzing…';
+
+      const json = await resp.json();
+
+      // example expected response:
+      // { verdict: 'safe'|'suspicious'|'malicious', score:0.82, reasons:[...], details:{...} }
+      displayResult(json);
+      progressBar.style.width='100%';
+      progressLabel.textContent = 'Scan complete';
+    }catch(err){
+      console.error(err);
+      progressLabel.textContent = 'Error: '+err.message;
+      statusResult.textContent = 'Failed';
+      progressBar.style.width='3%';
+      alert('Scan failed: '+err.message);
+    }
+  });
+
+  function displayResult(data){
+    finalResult.style.display='block';
+    const v = (data.verdict||'suspicious').toLowerCase();
+    let colorClass='susp', text='SUSPICIOUS';
+    if(v==='safe'){ colorClass='safe'; text='SAFE' }
+    if(v==='malicious'){ colorClass='mal'; text='MALICIOUS' }
+
+    statusDot.className = 'status-dot '+(colorClass==='safe'?'safe':(colorClass==='mal'?'mal':'susp'));
+    statusText.textContent = text + (data.score?(' • '+Math.round((data.score||0)*100)+'%'):'');
+    explainText.textContent = data.summary || (data.reasons && data.reasons.join('; ')) || 'No explanation provided.';
+    fullReport.textContent = JSON.stringify(data, null, 2);
+
+    // copy/download wiring
+    copyReport.onclick = ()=> {
+      navigator.clipboard.writeText(fullReport.textContent).then(()=> alert('Report copied'));
+    };
+    downloadJSON.onclick = ()=> {
+      const blob = new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = 'phish-report.json'; a.click();
+      URL.revokeObjectURL(url);
+    };
+  }
+
+})();
+</script>
+</body>
+</html>

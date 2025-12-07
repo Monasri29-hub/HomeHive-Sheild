@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>HomeHive Modules</title>
+
+<style>
+    :root {
+        --neon1: #2ee3ff;
+        --neon2: #ff4ecf;
+        --neon3: #7b5bff;
+        --glass: rgba(255,255,255,0.07);
+        --border: rgba(255,255,255,0.15);
+        --light: #d0e4ff;
+        font-family: "Inter", sans-serif;
+    }
+
+    body {
+        margin: 0;
+        background: #03050a;
+        color: var(--light);
+        overflow-x: hidden;
+    }
+
+    /* Background particles */
+    .particle {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(45px);
+        opacity: 0.085;
+        animation: float 9s ease-in-out infinite alternate;
+    }
+
+    .p1 { width: 300px; height: 300px; top: 12%; left: 5%; background: var(--neon1); }
+    .p2 { width: 260px; height: 260px; bottom: 14%; right: 6%; background: var(--neon2); animation-delay: 2.5s; }
+    .p3 { width: 200px; height: 200px; top: 50%; right: 40%; background: var(--neon3); animation-delay: 4s; }
+
+    @keyframes float {
+        0% { transform: translateY(0px); }
+        100% { transform: translateY(-40px); }
+    }
+
+    /* NAVBAR */
+    nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 22px 50px;
+        position: relative;
+        z-index: 2;
+    }
+
+    nav img {
+        height: 55px;
+        filter: drop-shadow(0 0 12px rgba(46,227,255,0.4));
+    }
+
+    .nav-links a {
+        text-decoration: none;
+        color: #cce4ff;
+        margin: 0 16px;
+        transition: 0.2s;
+    }
+
+    .nav-links a:hover {
+        color: white;
+        text-shadow: 0 0 12px var(--neon1);
+    }
+
+    .btn-nav {
+        padding: 10px 20px;
+        background: linear-gradient(135deg, var(--neon1), var(--neon2));
+        border-radius: 12px;
+        font-weight: 600;
+        color: white !important;
+        text-decoration: none;
+        transition: 0.2s;
+    }
+
+    .btn-nav:hover {
+        transform: scale(1.05);
+        box-shadow: 0 0 15px rgba(255,78,207,0.4);
+    }
+
+    /* HEADER */
+    .header {
+        padding: 60px 70px 20px;
+        position: relative;
+        z-index: 2;
+    }
+
+    .header h1 {
+        font-size: 42px;
+        background: linear-gradient(135deg, var(--neon1), var(--neon2));
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .header p {
+        color: #9eb2ca;
+        font-size: 16px;
+    }
+
+    /* MODULE CARDS GRID */
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 30px;
+        padding: 20px 70px;
+        position: relative;
+        z-index: 2;
+    }
+
+    .module-card {
+        background: var(--glass);
+        backdrop-filter: blur(16px);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        padding: 30px;
+        cursor: pointer;
+        transition: 0.25s;
+        box-shadow: 0 0 28px rgba(0,0,0,0.4);
+        text-align: center;
+    }
+
+    .module-card:hover {
+        transform: translateY(-12px);
+        box-shadow: 0 0 30px rgba(46,227,255,0.3);
+    }
+
+    .module-card h2 {
+        margin-bottom: 12px;
+        font-size: 22px;
+    }
+
+    .module-card p {
+        margin-bottom: 18px;
+        color: #a4bddb;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+    .open-btn {
+        padding: 12px 20px;
+        background: linear-gradient(135deg, var(--neon1), var(--neon2));
+        border-radius: 12px;
+        color: white;
+        font-weight: 600;
+        text-decoration: none;
+        transition: 0.2s;
+        display: inline-block;
+    }
+
+    .open-btn:hover {
+        transform: scale(1.06);
+        box-shadow: 0 0 20px rgba(255,78,207,0.45);
+    }
+
+    footer {
+        padding: 40px;
+        text-align: center;
+        color: #8392a7;
+        margin-top: 40px;
+    }
+</style>
+
+</head>
+
+<body>
+
+<!-- BACKGROUND GLOW PARTICLES -->
+<div class="particle p1"></div>
+<div class="particle p2"></div>
+<div class="particle p3"></div>
+
+<!-- NAVBAR -->
+<nav>
+    <img src="logo.png" alt="HomeHive">
+    <div class="nav-links">
+        <a href="home.html">Home</a>
+        <a href="dashboard.html">Dashboard</a>
+        <a href="emotion.html">Emotion</a>
+        <a href="phishing.html">Phishing</a>
+        <a href="security.html">Security</a>
+        <a class="btn-nav" href="modules.html">Modules</a>
+    </div>
+</nav>
+
+<!-- HEADER -->
+<div class="header">
+    <h1>Modules</h1>
+    <p>Select a tool to continue — powered by AI and neon precision.</p>
+</div>
+
+<!-- MODULE GRID -->
+<div class="grid">
+
+    <div class="module-card" onclick="location.href='emotion.html'">
+        <h2>Emotion Detector</h2>
+        <p>Upload a face image to detect emotion using AI.</p>
+        <a class="open-btn">Open Emotion AI</a>
+    </div>
+
+    <div class="module-card" onclick="location.href='phishing.html'">
+        <h2>Phishing Scanner</h2>
+        <p>Paste suspicious messages and scan for fraud.</p>
+        <a class="open-btn">Open Phishing Tool</a>
+    </div>
+
+    <div class="module-card" onclick="location.href='security.html'">
+        <h2>Security Monitor</h2>
+        <p>Detect unknown visitors & trigger alerts.</p>
+        <a class="open-btn">Open Security AI</a>
+    </div>
+
+</div>
+
+<footer>© HomeHive 2025 — Intelligent Home Protection</footer>
+
+</body>
+</html>
+

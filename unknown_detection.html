@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>HomeHive — Unknown Threat Detection</title>
+<style>
+  :root{
+    --bg:#070814; --muted:#9fb3c9; --neon-c:#2ee3ff; --neon-p:#ff4ecf;
+    font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;
+  }
+  html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--bg),#02040a);color:#eaf7ff}
+  nav{display:flex;justify-content:space-between;padding:14px 28px;align-items:center;background:rgba(0,0,0,0.28);backdrop-filter:blur(8px);border-bottom:1px solid rgba(255,255,255,0.03)}
+  nav img{height:40px}
+  nav a{color:var(--muted);text-decoration:none;margin-left:14px}
+  .container{max-width:1200px;margin:34px auto;padding:18px;display:grid;grid-template-columns:1fr 360px;gap:24px}
+  @media(max-width:980px){.container{grid-template-columns:1fr}.side{order:2}.main{order:1}}
+
+  .card{padding:20px;border-radius:14px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.006));border:1px solid rgba(255,255,255,0.03)}
+  h1{font-size:22px;margin:6px 0 10px;background:linear-gradient(90deg,var(--neon-c),var(--neon-p));-webkit-background-clip:text;background-clip: text;color:transparent}
+  p.lead{color:var(--muted);margin:0 0 14px}
+
+  .box{border-radius:12px;padding:16px;border:1px dashed rgba(255,255,255,0.04);background:rgba(255,255,255,0.01)}
+  .input{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
+
+  .row{display:flex;gap:10px;align-items:center}
+
+  .result{margin-top:16px;padding:14px;border-radius:10px;background:rgba(255,255,255,0.02)}
+  .tag{display:inline-block;padding:6px 8px;border-radius:8px;background:rgba(255,255,255,0.02);color:var(--muted);font-size:13px}
+
+  .confbar{height:10px;background:rgba(255,255,255,0.04);border-radius:999px;overflow:hidden;margin-top:8px}
+  .confbar > i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--neon-c),var(--neon-p));transition:width 300ms ease}
+
+  .panel{background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.006));padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,0.03)}
+  .muted{color:var(--muted)}
+</style>
+</head>
+<body>
+<nav>
+  <img src="logo.png" alt="HomeHive">
+  <div>
+    <a href="home.html">Home</a>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="modules.html">Modules</a>
+  </div>
+</nav>
+
+<div class="container">
+  <main class="card">
+    <h1>Unknown Threat Detection</h1>
+    <p class="lead">Upload files, submit suspicious URLs, or paste file metadata. HomeHive will fingerprint and score unknown items using heuristic and sandbox checks.</p>
+
+    <div class="box">
+      <label class="muted">Submit a URL</label>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <input id="urlInput" class="input" placeholder="https://example.com/suspicious" />
+        <button id="scanUrlBtn" class="btn" style="background:linear-gradient(90deg,var(--neon-c),var(--neon-p));color:#04101a">Scan URL</button>
+      </div>
+
+      <hr style="margin:12px 0;border:none;border-top:1px solid rgba(255,255,255,0.03)">
+
+      <label class="muted">Upload file (max 10MB)</label>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <input id="fileUpload" type="file" />
+        <button id="scanFileBtn" class="btn btn-ghost" style="border:1px solid rgba(255,255,255,0.06)">Scan File</button>
+      </div>
+
+      <div id="actionMeta" style="margin-top:12px" class="muted">Engine: <span class="tag">unknown-v1</span> • Endpoint: <code>/api/unknown_scan</code></div>
+    </div>
+
+    <div id="scanOutput" style="margin-top:14px;display:none">
+      <div class="result">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <strong id="verdictText">—</strong>
+            <div class="muted" id="verdictReason">—</div>
+          </div>
+          <div style="text-align:right">
+            <div class="muted">Score</div>
+            <div class="confbar"><i id="scoreBar"></i></div>
+          </div>
+        </div>
+
+        <div style="margin-top:12px" id="fingerprintArea"></div>
+
+        <div style="margin-top:12px;display:flex;gap:8px;align-items:center">
+          <button id="actionBlock" class="btn btn-ghost">Suggest Block</button>
+          <button id="actionQuarantine" class="btn btn-ghost">Quarantine</button>
+          <button id="actionIgnore" class="btn btn-ghost">Mark Ignore</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <aside class="side">
+    <div class="panel">
+      <h4>How it works</h4>
+      <p class="muted">We run URL heuristics, domain reputation checks, static file fingerprints (hash), and optional sandboxing for execution behavior.</p>
+    </div>
+
+    <div class="panel">
+      <h4>Quick actions</h4>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <button id="quickBlock" class="btn btn-ghost">Block Domain</button>
+        <button id="quickReport" class="btn btn-ghost">Report to SOC</button>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<script>
+(function(){
+  const urlInput = document.getElementById('urlInput');
+  const scanUrlBtn = document.getElementById('scanUrlBtn');
+  const fileUpload = document.getElementById('fileUpload');
+  const scanFileBtn = document.getElementById('scanFileBtn');
+
+  const scanOutput = document.getElementById('scanOutput');
+  const verdictText = document.getElementById('verdictText');
+  const verdictReason = document.getElementById('verdictReason');
+  const fingerprintArea = document.getElementById('fingerprintArea');
+  const scoreBar = document.getElementById('scoreBar');
+
+  const BACKEND = 'http://127.0.0.1:5000/security'; // replace with actual endpoint
+
+  scanUrlBtn.addEventListener('click', async ()=>{
+    const url = urlInput.value.trim();
+    if(!url) { alert('Enter a URL'); return; }
+    scanOutput.style.display='block';
+    verdictText.textContent = 'Scanning...';
+    verdictReason.textContent = 'Submitting URL to backend';
+    scoreBar.style.width='10%';
+
+    try{
+      const resp = await fetch(BACKEND, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ type:'url', url })
+      });
+      if(!resp.ok) throw new Error('server '+resp.status);
+      const j = await resp.json();
+      applyResult(j);
+    }catch(err){
+      verdictText.textContent='Error';
+      verdictReason.textContent = err.message;
+      scoreBar.style.width='2%';
+    }
+  });
+
+  scanFileBtn.addEventListener('click', async ()=>{
+    const f = fileUpload.files && fileUpload.files[0];
+    if(!f) { alert('Choose a file first'); return; }
+    if(f.size > 10*1024*1024){ alert('File too large (max 10MB)'); return; }
+
+    scanOutput.style.display='block';
+    verdictText.textContent='Uploading…';
+    scoreBar.style.width='6%';
+
+    try{
+      const fd = new FormData();
+      fd.append('file', f);
+      const resp = await fetch(BACKEND, { method:'POST', body: fd });
+      if(!resp.ok) throw new Error('server '+resp.status);
+      const j = await resp.json();
+      applyResult(j);
+    }catch(err){
+      verdictText.textContent='Error';
+      verdictReason.textContent = err.message;
+      scoreBar.style.width='2%';
+    }
+  });
+
+  function applyResult(data){
+    // expected: { verdict:'safe'|'suspicious'|'malicious', score:0.82, reason:'...', fingerprint:{sha256:'..',type:'exe'} }
+    const v = (data.verdict||'suspicious').toLowerCase();
+    if(v==='safe'){ verdictText.textContent='SAFE'; verdictReason.textContent = data.reason||'Looks clean'; scoreBar.style.width = ((data.score||0.85)*100)+'%'; scoreBar.style.background='linear-gradient(90deg,#3dd37b,#9df2b7)'; }
+    else if(v==='malicious'){ verdictText.textContent='MALICIOUS'; verdictReason.textContent = data.reason||'Malicious behaviors detected'; scoreBar.style.width = ((data.score||0.95)*100)+'%'; scoreBar.style.background='linear-gradient(90deg,#ff6b6b,#ff9f9f)'; }
+    else { verdictText.textContent='SUSPICIOUS'; verdictReason.textContent = data.reason||'Potential risk'; scoreBar.style.width = ((data.score||0.6)*100)+'%'; scoreBar.style.background='linear-gradient(90deg,#ffd166,#ff9f9f)'; }
+
+    // fingerprint
+    fingerprintArea.innerHTML = '<div class="muted">Fingerprint</div><div style="margin-top:6px"><code style="display:block;background:rgba(0,0,0,0.25);padding:8px;border-radius:8px">'+JSON.stringify(data.fingerprint||{},null,2)+'</code></div>';
+  }
+
+  // quick actions
+  document.getElementById('quickBlock').addEventListener('click', ()=> alert('Domain blocked (mock)'));
+  document.getElementById('quickReport').addEventListener('click', ()=> alert('Reported to SOC (mock)'));
+
+})();
+</script>
+</body>
+</html>

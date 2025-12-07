@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>HomeHive Modules — Dark Neon</title>
+<style>
+:root{
+  --bg-1:#05060a;--bg-2:#0a0f18;--neon-blue:#2ee3ff;--neon-pink:#ff4ecf;--muted:#98a0b3;
+  --card:rgba(255,255,255,0.02);--glass-radius:14px;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+}
+html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--bg-1),var(--bg-2));color:#e6f7ff;overflow-x:hidden}
+#bgCanvas{position:fixed;inset:0;z-index:0;pointer-events:none;filter: blur(8px) saturate(110%);opacity:0.9}
+.container{position:relative;z-index:2;max-width:1000px;margin:28px auto;padding:20px}
+.nav{display:flex;justify-content:space-between;align-items:center;padding:12px 0}
+.brand{display:flex;gap:12px;align-items:center;color:var(--neon-blue);font-weight:700;text-decoration:none}
+.nav a{color:var(--muted);text-decoration:none;padding:6px 8px;border-radius:8px}
+.nav a:hover{color:#fff;background:rgba(255,255,255,0.03);transform:translateY(-3px)}
+.hero{display:flex;gap:20px;align-items:center;margin:12px 0}
+.hero-left{flex:1}
+.title{font-size:28px;margin:6px 0 2px}
+.subtitle{color:var(--muted);margin:0 0 12px}
+.grid{display:grid;grid-template-columns:1fr;gap:18px}
+.card{background:linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.01));padding:18px;border-radius:14px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 20px 50px rgba(0,0,0,0.6)}
+.section-title{font-weight:800;margin:0 0 8px;color:#f3fbff}
+.controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+input[type=file]{background:transparent;padding:8px 10px;border-radius:10px;color:#fff;border:1px solid rgba(255,255,255,0.03)}
+textarea{width:100%;min-height:108px;background:transparent;border:1px solid rgba(255,255,255,0.04);padding:12px;border-radius:10px;color:#e7f6ff}
+.btn{padding:10px 14px;border-radius:12px;border:none;background:linear-gradient(90deg,var(--neon-blue),var(--neon-pink));color:#04121a;font-weight:700;cursor:pointer;position:relative;overflow:hidden}
+.btn:active{transform:scale(.98)}
+.preview{width:100%;max-height:340px;border-radius:10px;margin-top:12px;display:none}
+.result{margin-top:10px;padding:12px;border-radius:10px;font-weight:700}
+.safe{background:linear-gradient(180deg, rgba(0,0,0,0.02), rgba(255,255,255,0.02));color:#9df2b7}
+.warn{background:#2b0f16;color:#ffb6c8}
+.loading{color:var(--neon-blue);font-weight:700;margin-top:10px}
+
+/* countdown badge */
+.countdown{margin-top:10px;padding:12px;border-radius:10px;background:rgba(255,255,255,0.02);color:#ffb6c8;font-weight:800;text-align:center}
+
+/* responsive tweaks */
+@media (max-width:900px){ .hero{flex-direction:column;align-items:stretch} .title{font-size:22px} }
+</style>
+</head>
+<body>
+<canvas id="bgCanvas"></canvas>
+<div class="container">
+  <header class="nav">
+    <a class="brand" href="home.html"><span class="logo" style="width:40px;height:40px;border-radius:9px;background:linear-gradient(135deg,var(--neon-blue),var(--neon-pink));display:inline-flex;align-items:center;justify-content:center"><svg viewBox="0 0 24 24" width="18" height="18" xmlns="http://www.w3.org/2000/svg"><path d="M12 3l9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1V10l9-7z"/></svg></span> HomeHive</a>
+    <nav>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="#emotion">Emotion</a>
+      <a href="#phishing">Phishing</a>
+      <a href="#security">Security</a>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <div class="hero-left">
+      <div class="title">HomeHive Modules</div>
+      <div class="subtitle">Emotion detection • Phishing scanner • Security alerts — demo-ready.</div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <a class="btn" href="home.html">Back</a>
+      <a class="btn" href="dashboard.html">Dashboard</a>
+    </div>
+  </section>
+
+  <main class="grid">
+
+    <!-- EMOTION -->
+    <section id="emotion" class="card" data-reveal>
+      <div class="section-title">Emotion Detection</div>
+      <div class="controls">
+        <input id="fileInput" type="file" accept="image/*">
+        <button class="btn" id="btnAnalyze">Analyze</button>
+        <div id="loadingEmotion" class="loading" style="display:none">Analyzing...</div>
+      </div>
+      <img id="preview" class="preview" alt="preview image">
+      <div id="emotionResult" class="result" style="display:none"></div>
+    </section>
+
+    <!-- PHISHING -->
+    <section id="phishing" class="card" data-reveal>
+      <div class="section-title">Phishing / Scam Detection</div>
+      <textarea id="phishingText" placeholder="Paste suspicious message here...">your account is hacked pls send the otp to retrieve it</textarea>
+      <div style="margin-top:12px;display:flex;gap:12px;align-items:center">
+        <button class="btn" id="btnPhish">Analyze Message</button>
+        <div id="loadingPhish" class="loading" style="display:none">Scanning...</div>
+      </div>
+      <div id="phishResult" class="result" style="display:none"></div>
+    </section>
+
+    <!-- SECURITY -->
+    <section id="security" class="card" data-reveal>
+      <div class="section-title">Security: Unknown Person Detection</div>
+      <div class="controls">
+        <input id="securityInput" type="file" accept="image/*">
+        <button class="btn" id="btnSec">Check Visitor</button>
+      </div>
+      <div id="securityResult" class="result" style="display:none"></div>
+      <div id="securityCountdown" class="countdown" style="display:none"></div>
+    </section>
+
+  </main>
+
+  <div style="height:36px"></div>
+  <div class="footer" style="text-align:center;color:var(--muted)">© HomeHive 2025 — Demo mode</div>
+</div>
+
+<script>
+/* canvas particles - lightweight */
+(function(){
+  const canvas = document.getElementById('bgCanvas'), ctx = canvas.getContext('2d');
+  let W = canvas.width = innerWidth, H = canvas.height = innerHeight;
+  const parts=[]; const N = Math.round(Math.max(16,(W*H)/160000));
+  function r(a,b){return Math.random()*(b-a)+a}
+  class P{constructor(){this.x=r(0,W);this.y=r(0,H);this.r=r(6,28);this.dx=r(-0.12,0.12);this.dy=r(-0.04,0.04);this.h=Math.random()>0.5?200+Math.random()*20:320+Math.random()*30;this.a=r(0.05,0.16)}step(){this.x+=this.dx;this.y+=this.dy; if(this.x<-100)this.x=W+100; if(this.x>W+100)this.x=-100; if(this.y<-100)this.y=H+100; if(this.y>H+100)this.y=-100}draw(){const g=ctx.createRadialGradient(this.x,this.y,0,this.x,this.y,this.r*2);g.addColorStop(0,`hsla(${this.h},90%,65%,${this.a})`);g.addColorStop(.5,`hsla(${this.h},70%,50%,${this.a*0.35})`);g.addColorStop(1,'rgba(6,10,18,0)');ctx.beginPath();ctx.fillStyle=g;ctx.arc(this.x,this.y,this.r,0,Math.PI*2);ctx.fill();ctx.closePath()}}
+  function init(){parts.length=0;W=canvas.width=innerWidth;H=canvas.height=innerHeight;for(let i=0;i<N;i++)parts.push(new P())}
+  function frame(){ctx.clearRect(0,0,W,H);for(let p of parts){p.step();p.draw()}requestAnimationFrame(frame)}
+  init();frame();addEventListener('resize',init);
+})();
+
+/* small reveal */
+(function(){const els=document.querySelectorAll('[data-reveal]');const obs=new IntersectionObserver((entries)=>{entries.forEach(e=>{if(e.isIntersecting){e.target.style.transition='opacity .9s ease, transform .9s ease';e.target.style.opacity=1;e.target.style.transform='none';obs.unobserve(e.target)}})},{threshold:0.12});els.forEach(el=>{el.style.opacity=0;el.style.transform='translateY(18px)';obs.observe(el)});})();
+
+/* ---------- EMOTION MODULE ---------- */
+let selectedFile=null;
+const fileInput=document.getElementById('fileInput'), preview=document.getElementById('preview'), btnAnalyze=document.getElementById('btnAnalyze'), loadingEmotion=document.getElementById('loadingEmotion'), emotionResult=document.getElementById('emotionResult');
+
+fileInput.addEventListener('change', (e)=>{selectedFile=e.target.files[0]; if(selectedFile){ preview.src=URL.createObjectURL(selectedFile); preview.style.display='block'; }});
+
+btnAnalyze.addEventListener('click', async ()=>{
+  if(!selectedFile){ alert('Select an image first'); return; }
+  loadingEmotion.style.display='block'; emotionResult.style.display='none';
+  const form = new FormData(); form.append('image', selectedFile);
+  try{
+    const res = await fetch('http://127.0.0.1:5000/analyze',{method:'POST',body:form});
+    const data = await res.json();
+    loadingEmotion.style.display='none';
+    emotionResult.style.display='block';
+    if(data.error){ emotionResult.className='result warn'; emotionResult.innerText='Error: '+(data.error||'unknown') }
+    else{ emotionResult.className='result safe'; emotionResult.innerText='Detected: '+(data.emotion||'neutral').toUpperCase() }
+  }catch(err){ loadingEmotion.style.display='none'; alert('Network error: '+err) }
+});
+
+/* ---------- PHISHING MODULE ---------- */
+const btnPhish=document.getElementById('btnPhish'), loadingPhish=document.getElementById('loadingPhish'), phishResult=document.getElementById('phishResult'), phishingText=document.getElementById('phishingText');
+
+btnPhish.addEventListener('click', async ()=>{
+  const text = phishingText.value.trim(); if(!text){ alert('Paste a message!'); return; }
+  loadingPhish.style.display='block'; phishResult.style.display='none';
+  try{
+    const res = await fetch('http://127.0.0.1:5000/phishing',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text})});
+    const d = await res.json(); loadingPhish.style.display='none'; phishResult.style.display='block';
+    if(d.error){ phishResult.className='result warn'; phishResult.innerText='Error: '+d.error; }
+    else{
+      if(d.risk==='high'){ phishResult.className='result warn'; phishResult.innerText='🟥 HIGH RISK — Likely Scam'; }
+      else if(d.risk==='medium'){ phishResult.className='result warn'; phishResult.innerText='🟧 MEDIUM RISK — Be Cautious'; }
+      else{ phishResult.className='result safe'; phishResult.innerText='🟩 SAFE — No major scam indicators'; }
+    }
+  }catch(e){ loadingPhish.style.display='none'; alert('Network error: '+e) }
+});
+
+/* ---------- SECURITY MODULE ---------- */
+const btnSec=document.getElementById('btnSec'), securityInput=document.getElementById('securityInput'), secResult=document.getElementById('securityResult'), secCountdown=document.getElementById('securityCountdown');
+
+btnSec.addEventListener('click', async ()=>{
+  if(!securityInput.files.length){ alert('Upload visitor image'); return; }
+  const form = new FormData(); form.append('image', securityInput.files[0]);
+  secResult.style.display='none'; secCountdown.style.display='none';
+  try{
+    const res = await fetch('http://127.0.0.1:5000/security',{method:'POST',body:form});
+    const d = await res.json();
+    if(d.error){ secResult.style.display='block'; secResult.className='result warn'; secResult.innerText='Error: '+d.error; return; }
+    if(d.status==='known'){ secResult.style.display='block'; secResult.className='result safe'; secResult.innerText='🟩 KNOWN visitor — Access granted'; return; }
+    // unknown: start countdown
+    secResult.style.display='block'; secResult.className='result warn'; secResult.innerText='🚨 UNKNOWN person detected!';
+    let timer=10; secCountdown.style.display='block'; secCountdown.innerText='Auto-call in '+timer+'s';
+    const it = setInterval(()=>{ timer--; if(timer>=0) secCountdown.innerText='Auto-call in '+timer+'s'; if(timer<0){ clearInterval(it); secResult.className='result warn'; secResult.innerText='📞 EMERGENCY CALL PLACED'; secCountdown.style.display='none'; } },1000);
+  }catch(e){ alert('Network error: '+e) }
+});
+
+/* reduce-motion respects */
+(function(){if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){ document.getElementById('bgCanvas').style.display='none' }})();
+</script>
+</body>
+</html>
+

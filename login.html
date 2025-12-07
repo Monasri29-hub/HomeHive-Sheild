@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HomeHive Login</title>
+
+<style>
+    :root {
+        --bg1: #04050a;
+        --bg2: #0a0f1a;
+        --glass: rgba(255,255,255,0.07);
+        --border: rgba(255,255,255,0.18);
+        --neon1: #2ee3ff;
+        --neon2: #ff4ecf;
+        --grad: linear-gradient(135deg, var(--neon1), var(--neon2));
+        font-family: 'Inter', sans-serif;
+    }
+
+    body {
+        margin: 0;
+        height: 100vh;
+        background: radial-gradient(900px 500px at 20% 20%, rgba(46,227,255,0.07), transparent),
+                    radial-gradient(1000px 600px at 80% 80%, rgba(255,78,207,0.06), transparent),
+                    var(--bg1);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+        color: white;
+        animation: fadeIn 0.8s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* floating soft particles */
+    .float {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(30px);
+        opacity: 0.18;
+        animation: floatAnim 8s infinite alternate ease-in-out;
+    }
+    .f1 { width: 280px; height: 280px; background: var(--neon1); top: 10%; left: 8%; }
+    .f2 { width: 260px; height: 260px; background: var(--neon2); bottom: 12%; right: 8%; animation-delay: 2s; }
+
+    @keyframes floatAnim {
+        0% { transform: translateY(0px); }
+        100% { transform: translateY(-50px); }
+    }
+
+    /* login card */
+    .card {
+        width: 340px;
+        padding: 32px;
+        background: var(--glass);
+        border: 1px solid var(--border);
+        backdrop-filter: blur(18px);
+        border-radius: 20px;
+        box-shadow: 0 0 60px rgba(0,0,0,0.5);
+        text-align: center;
+        animation: cardIn 0.9s ease-out;
+    }
+
+    @keyframes cardIn {
+        from { opacity: 0; transform: scale(0.93); }
+        to { opacity: 1; transform: scale(1); }
+    }
+
+    .logo {
+        width: 110px;
+        margin-bottom: 18px;
+        filter: drop-shadow(0 0 12px rgba(46,227,255,0.4));
+    }
+
+    h2 {
+        margin-bottom: 18px;
+        font-size: 24px;
+        font-weight: 700;
+        background: var(--grad);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .input {
+        width: 100%;
+        padding: 12px;
+        margin: 10px 0;
+        background: rgba(255,255,255,0.08);
+        border: 1px solid rgba(255,255,255,0.15);
+        border-radius: 10px;
+        color: #e2faff;
+        outline: none;
+        font-size: 14px;
+    }
+    .input:focus {
+        border: 1px solid var(--neon1);
+        box-shadow: 0 0 12px rgba(46,227,255,0.5);
+    }
+
+    .btn {
+        width: 100%;
+        margin-top: 16px;
+        padding: 12px;
+        background: var(--grad);
+        border: none;
+        border-radius: 12px;
+        color: white;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+    .btn:hover {
+        transform: scale(1.04);
+        box-shadow: 0 0 16px rgba(255,78,207,0.4);
+    }
+
+    .guest {
+        margin-top: 14px;
+        color: #9cc0ff;
+        cursor: pointer;
+        font-size: 14px;
+    }
+    .guest:hover {
+        text-decoration: underline;
+    }
+</style>
+
+</head>
+<body>
+
+<div class="float f1"></div>
+<div class="float f2"></div>
+
+<div class="card">
+    <img src="logo.png" class="logo" alt="HomeHive Logo">
+
+    <h2>Welcome to HomeHive</h2>
+
+    <input type="email" id="email" class="input" placeholder="Email">
+    <input type="password" id="password" class="input" placeholder="Password">
+
+    <button class="btn" onclick="login()">Login</button>
+
+    <div class="guest" onclick="guest()">Continue as Guest</div>
+</div>
+
+<script>
+    function login() {
+        // For hackathon: ANY input is accepted.
+        location.href = 'home.html';
+    }
+
+    function guest() {
+        location.href = 'home.html';
+    }
+</script>
+
+</body>
+</html>
+
